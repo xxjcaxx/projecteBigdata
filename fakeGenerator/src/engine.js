@@ -4,11 +4,14 @@ const arrayStreets = Object.keys(streets);
 
 const cityEntries = [ 'CV-645', 'N-340',  'Beata Ines'];
 
+const compose = (...fns) => x => fns.reduceRight((v, f) => f(v), x)
+
 
 const getStreetNodes = (nodes) => (street) => nodes.filter(node => node.entries.includes(street) )[0]
 const getStreetThisNodes = getStreetNodes(nodes);
 
-
+const getRandomStreet = (arrayStreets) => arrayStreets[Math.floor(Math.random()*arrayStreets.length)];
+const getAvailableStreets = (route) => (node) => node.exits.filter(s => !route.includes(s));
 
 /**
  * Genera n rutes aleatories en la ciutat
@@ -17,24 +20,29 @@ const getStreetThisNodes = getStreetNodes(nodes);
  * @param {*} arrayStreets 
  */
 const generateRoutes = (n,nodes,arrayStreets) => {
-    let home = arrayStreets[Math.floor(Math.random()*arrayStreets.length)];
-    let homeNodes = getStreetThisNodes(home);
-        
+    let home = getRandomStreet(arrayStreets);
+    //let homeNodes = getStreetThisNodes(home);
+    let routes = [];    
     for(let i =0; i< n; i++){
         let currentStreet = home;
         let route = [];
-       //while(!cityEntries.includes(currentStreet))
-       for(let j = 0; j <10 ; j++)
+       while(!cityEntries.includes(currentStreet) && currentStreet)
        {
+        
             route.push(currentStreet);
-            let availableNode =getStreetThisNodes(currentStreet);
-            let nextNode = availableNode;
-            let availableStreets = nextNode.exits.filter(s => !route.includes(s))
-            currentStreet = availableStreets[Math.floor(Math.random()*availableStreets.length)];
-            
+            currentStreet = compose(getRandomStreet,getAvailableStreets(route),getStreetThisNodes)(currentStreet);
+           // let nextNode = getStreetThisNodes(currentStreet);
+           // let availableStreets = getAvailableStreets(route)(nextNode);
+           // currentStreet =  getRandomStreet(availableStreets);
         }
+        route.push(currentStreet);
         console.log(route,currentStreet);
+        if(route.at(-1)) {routes.push(route)}
+        route = Math.random() < 0.5 ? route.reverse() : route;
+        
     }
+    return routes;
+    
 }
 
 
