@@ -27,6 +27,8 @@ const generateSingleRoute = (cityEntries) => (home) => {
         route = [...route,currentStreet];
         return route;
 }
+
+
 /**
  * Generate n random routes
  * @param {} n 
@@ -45,12 +47,10 @@ const generateRoutes = (n,nodes,arrayStreets) => {
         }
         
     }
-   
-
     return routes;
 }
 
-
+// Factory of cars
 const carGenerator = (img,id) => ({
     img, id,
     maxSpeed: Math.random()*100+20, 
@@ -63,13 +63,16 @@ const carGenerator = (img,id) => ({
     routeStepNumber :0
 });
 
-const removeInvalidCars = (cars) => cars.filter(car=> car.routes.length > 2); 
+// Remove cars that had exited the city
 const removeExitCars = (cars) => cars.filter(car=> car.currentStreet !== -1);
-const addStartRoute = (car) => (randomRoute) => (car.route = randomRoute, car);
-
+// Assign a route to a car
+const addStartRoute = (car) => (route) => (car.route = route, car);
+// Add first street of the route to a car. 
 const carCurrentStreet = (car) => (car.currentStreet = car.route[0], car);
+// Inizialize a car with a random route and the start of the route
 const carStartRoute = (car) => compose(carCurrentStreet,addStartRoute(car),getRandomArray)(car.routes);
 
+// 
 const assignCarsToStreets = (streets) => 
                             (cars) => cars.map(car=>(streets[car.currentStreet]
                                 .cars.push(car), car))
@@ -103,6 +106,7 @@ const crossCar = (streets) => (car) => {
     return car
 }
 
+
 const getCarsCanCross = (streets) => compose(
     FILTER(car => car.secondsToCanCross <= 0), // Some first cars are not yet in node
     //log,
@@ -110,6 +114,9 @@ const getCarsCanCross = (streets) => compose(
     MAP(street => street.cars[0]), // Get first car
     Object.values)
     (streets);
+    
+
+
 
 const reenterCar = (car) => {
     car.currentStreet = car.lastStreet;
@@ -130,19 +137,32 @@ const reenterCar = (car) => {
 
 const generateOriginalCars = (number) => compose(
     MAP(carStartRoute),
-    removeInvalidCars,
     MAP((n,i)=> carGenerator(`car${i}.jpg`,i))
     )((new Array(number)).fill(null));
 
 const regenerateCarList = (cars) => compose(
-    removeExitCars,
+ //   removeExitCars,
     updateSecondsToCanCross
     )(cars);
 
+
+
+const getCandidatesToEnter = (OriginalCars) => OriginalCars.filter(car => car.currentStreet === -1 && car.lastStreet);
+
 const getCandidateToEnter = (OriginalCars) => compose(
     getRandomArray,
-    FILTER(car => car.currentStreet === -1 && car.lastStreet)
+    getCandidatesToEnter
+    //FILTER(car => car.currentStreet === -1 && car.lastStreet)
 )(OriginalCars);
+
+
+
+
+
+
+
+
+// Start of app
 
 document.addEventListener('DOMContentLoaded',()=>{
 
@@ -154,7 +174,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     console.log("Original Cars: ",OriginalCars);
 
-    let cars = [...OriginalCars];
+   // let cars = [...OriginalCars];
 
     //Remove comments
      //   document.querySelector('#carList table').innerHTML = createCarsTable(cars);
@@ -165,22 +185,17 @@ document.addEventListener('DOMContentLoaded',()=>{
         // We get the first car of every street and, if can cross, it cross
             let carsThatCanCross = getCarsCanCross(streetsState);
             carsThatCanCross.forEach(doIfRandom(0.5)(crossCar(streetsState)));
-         
             // We Regenerate the street states based on the cars streets after cross
-        //streetsState = Object.fromEntries(Object.keys(streets).map(s => ([s,{...streets[s],cars: []}])));
-        cars = regenerateCarList(cars);
-        //assignCarsToStreets(streetsState)(cars);
-
+         regenerateCarList(OriginalCars);
             // We show the result
         document.querySelector('#streetList table').innerHTML = createStreetsTable(Object.entries(streetsState));
-        document.querySelector('#totalCars').innerHTML = `Total Cars: ${cars.length}`
+        document.querySelector('#totalCars').innerHTML = `Total Cars: ${999-getCandidatesToEnter(OriginalCars).length}`
             //Some of the exited cars can return to the circuit in the same street they finished
             let candidateToEnter = getCandidateToEnter(OriginalCars);
 
             if (candidateToEnter) {
                 compose (
                 car => (streetsState[car.currentStreet].cars.push(car)),
-                car => (cars.push(car),car),
                 reenterCar)(candidateToEnter)
             }
 
