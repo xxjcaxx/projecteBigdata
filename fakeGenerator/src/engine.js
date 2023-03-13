@@ -1,43 +1,54 @@
-import { nodes, streets } from "./data.js";
+import { nodes, streets, cityEntries } from "./data.js";
+import {compose,MAP,log, FILTER,getRandomArray, doIfRandom} from "./functionalUtils.js";
+import { createCarsTable, createStreetsTable } from "./views.js";
+import {generateMQTT,takePhoto,getSensorObject} from "./sensors.js";
+import "./style.css";
 
 const arrayStreets = Object.keys(streets);
 
-const cityEntries = [ 'CV-645', 'N-340',  'Beata Ines'];
-
-const compose = (...fns) => x => fns.reduceRight((v, f) => f(v), x);
-
-
+// Get the node that have this street as an entry
 const getStreetNodes = (nodes) => (street) => nodes.filter(node => node.entries.includes(street) )[0]
 const getStreetThisNodes = getStreetNodes(nodes);
 
-const getRandomStreet = (arrayStreets) => arrayStreets[Math.floor(Math.random()*arrayStreets.length)];
+// From a route and a node, get the streets this node can exit, can´t be an existing street in the route
 const getAvailableStreets = (route) => (node) => node.exits.filter(s => !route.includes(s));
 
+
+
+// Functions to generate random routes
+const generateSingleRoute = (cityEntries) => (home) => {
+    let currentStreet = home;
+        let route = [];
+       while(!cityEntries.includes(currentStreet) && currentStreet)
+       {
+            route = [...route,currentStreet];
+            currentStreet = compose(getRandomArray,getAvailableStreets(route),getStreetThisNodes)(currentStreet);
+        }
+        route = [...route,currentStreet];
+        return route;
+}
 /**
- * Genera n rutes aleatories en la ciutat
+ * Generate n random routes
  * @param {} n 
  * @param {*} nodes 
  * @param {*} arrayStreets 
  */
 const generateRoutes = (n,nodes,arrayStreets) => {
-    let home = getRandomStreet(arrayStreets);
-    //let homeNodes = getStreetThisNodes(home);
+    let home = getRandomArray(arrayStreets);
     let routes = [];    
-    for(let i =0; i< n; i++){
-        let currentStreet = home;
-        let route = [];
-       while(!cityEntries.includes(currentStreet) && currentStreet)
-       {
-            route = [...route,currentStreet];
-            currentStreet = compose(getRandomStreet,getAvailableStreets(route),getStreetThisNodes)(currentStreet);
+    //for(let i =0; i< n; i++){
+    while(routes.length < n) {
+        let route = generateSingleRoute(cityEntries)(home);
+        if(route.at(-1)) {
+            routes.push(route);
+            routes.push([...route].reverse());
         }
-        route = [...route,currentStreet];
-        if(route.at(-1)) {routes.push(route)}
-        route = Math.random() < 0.5 ? route.reverse() : route;
+        
     }
+   
+
     return routes;
 }
-
 
 
 const carGenerator = (img,id) => ({
@@ -45,11 +56,146 @@ const carGenerator = (img,id) => ({
     maxSpeed: Math.random()*100+20, 
     pollution: Math.random(), 
     noise: Math.random(),
-    routes: generateRoutes(Math.random()*10,nodes,arrayStreets),
-})
+    routes: generateRoutes(Math.random()*8+2,nodes,arrayStreets),
+    secondsToCanCross : 0,
+    secondsNotCrossing : 0,
+    lastStreet: '',
+    routeStepNumber :0
+});
+
+const removeInvalidCars = (cars) => cars.filter(car=> car.routes.length > 2); 
+const removeExitCars = (cars) => cars.filter(car=> car.currentStreet !== -1);
+const addStartRoute = (car) => (randomRoute) => (car.route = randomRoute, car);
+
+const carCurrentStreet = (car) => (car.currentStreet = car.route[0], car);
+const carStartRoute = (car) => compose(carCurrentStreet,addStartRoute(car),getRandomArray)(car.routes);
+
+const assignCarsToStreets = (streets) => 
+                            (cars) => cars.map(car=>(streets[car.currentStreet]
+                                .cars.push(car), car))
+
+const getSecondsToCanCross = (currentStreetLong) => (car) => currentStreetLong / (car.maxSpeed * (Math.random()+0.2))
+const updateSecondsToCanCross = (cars) => {cars.forEach(car=> { 
+    car.secondsToCanCross = car.secondsToCanCross > 0 ? car.secondsToCanCross -1 : 0;
+    car.secondsNotCrossing = car.secondsToCanCross <=0 ? car.secondsNotCrossing +1 : 0;
+});
+
+    return cars;
+
+}
+
+const crossCar = (streets) => (car) => {
+
+    streets[car.currentStreet].cars = streets[car.currentStreet].cars.slice(1);
+    car.lastStreet = car.currentStreet;
+    if (car.route.indexOf(car.currentStreet) < car.route.length -1){
+        car.currentStreet = car.route[car.route.indexOf(car.currentStreet)+1];
+        car.secondsToCanCross =  getSecondsToCanCross(streets[car.currentStreet].long)(car);
+        streets[car.currentStreet].cars.push(car);
+    } else {
+        car.currentStreet = -1;
+        car.secondsToCanCross = 0;
+    }
+    car.routeStepNumber ++;
+    car.secondsNotCrossing =0;
+    //console.log(car.secondsToCanCross);
+    
+    return car
+}
+
+const getCarsCanCross = (streets) => compose(
+    FILTER(car => car.secondsToCanCross <= 0), // Some first cars are not yet in node
+    //log,
+    FILTER(item => item),
+    MAP(street => street.cars[0]), // Get first car
+    Object.values)
+    (streets);
+
+const reenterCar = (car) => {
+    car.currentStreet = car.lastStreet;
+    car.routeStepNumber = 0;
+    car.secondsNotCrossing =0;
+    car.route = cityEntries.includes(car.currentStreet) ? compose(
+        getRandomArray,
+        FILTER(r => cityEntries.includes(r[0])),
+        c => c.routes
+        )(car) : compose(
+            getRandomArray,
+            FILTER(r => r[0] == car.currentStreet),
+            c => c.routes
+            )(car) 
+        
+    return car;
+}
+
+const generateOriginalCars = (number) => compose(
+    MAP(carStartRoute),
+    removeInvalidCars,
+    MAP((n,i)=> carGenerator(`car${i}.jpg`,i))
+    )((new Array(number)).fill(null));
+
+const regenerateCarList = (cars) => compose(
+    removeExitCars,
+    updateSecondsToCanCross
+    )(cars);
+
+const getCandidateToEnter = (OriginalCars) => compose(
+    getRandomArray,
+    FILTER(car => car.currentStreet === -1 && car.lastStreet)
+)(OriginalCars);
 
 document.addEventListener('DOMContentLoaded',()=>{
 
-    console.log(carGenerator('plate1.png',2));
+    let streetsState = Object.fromEntries(Object.keys(streets).map(s => ([s,{...streets[s],cars: []}])));
 
-});
+    // Start the array of cars with starting route and street
+    const OriginalCars = generateOriginalCars(999);
+    assignCarsToStreets(streetsState)(OriginalCars);
+
+    console.log("Original Cars: ",OriginalCars);
+
+    let cars = [...OriginalCars];
+
+    //Remove comments
+     //   document.querySelector('#carList table').innerHTML = createCarsTable(cars);
+  
+     let step = 0;
+    setInterval(function mainIntervalCallback() {
+        // Cross cars
+        // We get the first car of every street and, if can cross, it cross
+            let carsThatCanCross = getCarsCanCross(streetsState);
+            carsThatCanCross.forEach(doIfRandom(0.5)(crossCar(streetsState)));
+         
+            // We Regenerate the street states based on the cars streets after cross
+        //streetsState = Object.fromEntries(Object.keys(streets).map(s => ([s,{...streets[s],cars: []}])));
+        cars = regenerateCarList(cars);
+        //assignCarsToStreets(streetsState)(cars);
+
+            // We show the result
+        document.querySelector('#streetList table').innerHTML = createStreetsTable(Object.entries(streetsState));
+        document.querySelector('#totalCars').innerHTML = `Total Cars: ${cars.length}`
+            //Some of the exited cars can return to the circuit in the same street they finished
+            let candidateToEnter = getCandidateToEnter(OriginalCars);
+
+            if (candidateToEnter) {
+                compose (
+                car => (streetsState[car.currentStreet].cars.push(car)),
+                car => (cars.push(car),car),
+                reenterCar)(candidateToEnter)
+            }
+
+            /// Sensors Turn
+            
+            // Every node has a camera that takes a photo when pass a car
+          //  let cameraSensors = carsThatCanCross.map(compose(generateMQTT,takePhoto,getSensorObject));
+            //console.log(cameraSensors);
+            //console.log("normal: ",step); 
+            //Promise.all(cameraSensors).then(console.log("sensors: ", step));
+            //step++;
+           // cameraSensors.forEach(sensorPromise => sensorPromise.then(sensorData => console.log(sensorData)));
+            //let streetSensors = streetsState.map();
+        },100);
+
+
+    });
+

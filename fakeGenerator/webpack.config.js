@@ -14,7 +14,7 @@ devServer: {
    static: './dist',
  },
  plugins: [
-   new CleanWebpackPlugin(),
+ //  new CleanWebpackPlugin(),
 
    new HtmlWebpackPlugin({
        title: 'Fake Generator',

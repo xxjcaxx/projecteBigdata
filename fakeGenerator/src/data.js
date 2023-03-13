@@ -104,5 +104,8 @@ export const streets = {
     'Academic Maravall': {long: 90},
     'Cosmografo': {long: 492},
     'Maulets': {long: 90},
-    'N-340': {long: 1000}
+    'N-340': {long: 1000},
+    'Republica Argentina' : {long:335}
 };
+
+export const cityEntries = [ 'CV-645', 'N-340',  'Beata Ines'];
