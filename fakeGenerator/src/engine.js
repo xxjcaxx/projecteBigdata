@@ -1,14 +1,14 @@
 import { nodes, streets, cityEntries, cityExits } from "./data.js";
 import {compose,MAP,log, FILTER,getRandomArray, doIfRandom} from "./functionalUtils.js";
 import { createCarsTable, createStreetsTable } from "./views.js";
-import {generateMQTT,takePhoto,getSensorObject} from "./sensors.js";
+import {generateMQTT,takePhoto,getSensorObject,getSensorStreetObject} from "./sensors.js";
 import "./style.css";
 
 const arrayStreets = Object.keys(streets);
 
 // Get the node that have this street as an entry
 const getStreetNodes = (nodes) => (street) => nodes.filter(node => node.entries.includes(street) )[0]
-const getStreetThisNodes = getStreetNodes(nodes);
+
 
 // From a route and a node, get the streets this node can exit, can´t be an existing street in the route
 const getAvailableStreets = (route) => (node) => node.exits.filter(s => !route.includes(s));
@@ -16,13 +16,25 @@ const getAvailableStreets = (route) => (node) => node.exits.filter(s => !route.i
 
 
 // Functions to generate random routes
-const generateSingleRoute = (cityExits) => (home) => {
+const generateSingleRoute = (cityExits) => (cityEntries) => (home) => {
     let currentStreet = home;
         let route = [];
        while(!cityExits.includes(currentStreet) && currentStreet)
        {
             route = [...route,currentStreet];
-            currentStreet = compose(getRandomArray,getAvailableStreets(route),getStreetThisNodes)(currentStreet);
+            currentStreet = compose(getRandomArray,getAvailableStreets(route),getStreetNodes(nodes))(currentStreet);
+        }
+        route = [...route,currentStreet];
+        return route;
+}
+
+const generateSingleRouteToHome = (cityExits) => (cityEntries) => (home) => {
+    let currentStreet = getRandomArray(cityEntries);
+        let route = [];
+       while(currentStreet !== home && currentStreet && !cityExits.includes(currentStreet))
+       {
+            route = [...route,currentStreet];
+            currentStreet = compose(getRandomArray,getAvailableStreets(route),getStreetNodes(nodes))(currentStreet);
         }
         route = [...route,currentStreet];
         return route;
@@ -36,17 +48,22 @@ const generateSingleRoute = (cityExits) => (home) => {
  * @param {*} arrayStreets 
  */
 const generateRoutes = (n,nodes,arrayStreets) => {
-    let home = getRandomArray(arrayStreets);
+    let home = getRandomArray(arrayStreets.filter(s=> !cityEntries.includes(s) && !cityExits.includes(s)));
     let routes = [];    
     //for(let i =0; i< n; i++){
     while(routes.length < n) {
-        let route = generateSingleRoute(cityExits)(home);
+        let route = generateSingleRoute(cityExits)(cityEntries)(home);
         if(route.at(-1)) {
             routes.push(route);
-            routes.push([...route].reverse());
-        }
-        
+        }  
     }
+    while(routes.length < n*2) {
+        let route = generateSingleRouteToHome(cityExits)(cityEntries)(home);
+        if(route.at(-1)) {
+            routes.push(route);
+        }  
+    }
+    
     return routes;
 }
 
@@ -126,7 +143,9 @@ const reenterCar = (car) => {
     car.currentStreet = car.lastStreet;
     car.routeStepNumber = 0;
     car.secondsNotCrossing =0;
-    car.route = cityEntries.includes(car.currentStreet) ? compose(
+
+
+    car.route = cityExits.includes(car.currentStreet) ? compose(
         getRandomArray,
         FILTER(r => cityEntries.includes(r[0])),
         c => c.routes
@@ -183,7 +202,7 @@ document.addEventListener('DOMContentLoaded',()=>{
    // let cars = [...OriginalCars];
 
     //Remove comments
-     //   document.querySelector('#carList table').innerHTML = createCarsTable(cars);
+        document.querySelector('#carList table').innerHTML = createCarsTable(OriginalCars);
   
      let step = 0;
     setInterval(function mainIntervalCallback() {
@@ -207,14 +226,19 @@ document.addEventListener('DOMContentLoaded',()=>{
 
             /// Sensors Turn
             // Every node has a camera that takes a photo when pass a car
-            carsThatCanCross.map(compose(
+           carsThatCanCross.map(compose(
                 generateMQTT('cars'),
                 takePhoto,
                 getSensorObject));
 
-            // Every 
+            // Every street has a sensor of noise, pollution, temperature
+            Object.values(streetsState).forEach(
+                compose( generateMQTT('streets'),
+                //log,
+                getSensorStreetObject)
+            );
             
-        },1000);
+        },5000);
 
 
     });

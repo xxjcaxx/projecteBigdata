@@ -1,4 +1,4 @@
-import {compose,MAP,log} from "./functionalUtils.js"
+import {compose,MAP,log,intToRGB,hashCode} from "./functionalUtils.js"
 export {createCarsTable,createStreetsTable};
 
 
@@ -17,7 +17,9 @@ const generateGaps = (street) => Array(Math.ceil(street.cars[0].secondsToCanCros
 const createStreetRow = (street) => `
 <tr>
 <td>${street[0]}</td>
-<td>${street[1].cars.length > 0 ? generateGaps(street[1]): ''}${street[1].cars.map(c=> `<span style="background-color : rgb(${c.secondsNotCrossing > 1 ? 255 : 0},${c.secondsNotCrossing > 1 ? 0 : 150},50)">${Math.floor(c.id)}</span>`).join('')}</td>
+<td>${street[1].cars.length > 0 ? generateGaps(street[1]): ''}${street[1].cars.map(c=> `<span style="
+                   background-color : #${ intToRGB(hashCode(c.id+"")) };
+                   border:  1px solid rgb(${c.secondsNotCrossing > 1 ? 255 : 0},${c.secondsNotCrossing > 1 ? 0 : 150},50) ">${Math.floor(c.id)}</span>`).join('')}</td>
 </tr>
 `;
 const createStreetsTable = (streets) => createTable(createStreetRow)(streets);

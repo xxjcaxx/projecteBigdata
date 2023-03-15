@@ -12,7 +12,7 @@ export const nodes = [
     latitude: -0.534517
 },
 {name: 'Palasiet - Aben Ferri', 
-    entries: ['PalasietA','Aben FerriB','ArgenteriaA'],
+    entries: ['PalasietA','Aben FerriB','Argenteria'],
     exits: ['PalasietB','Aben FerriA'],
     longitude: 38.985489, 
     latitude: -0.534157
@@ -24,8 +24,8 @@ export const nodes = [
     latitude:  -0.535236
 },
 {name: 'Rotonda Adexa', 
-    entries: ['Corts Valencianes 2B', '9 OctubreB', 'Abu MasaifaB','Ausias MarchA', 'Beata InesA'],
-    exits: ['Corts Valencianes 2A', 'ArgenteriaA' ,'9 OctubreA','Reina','Ausias MarchB', 'Beata InesB'],
+    entries: ['Corts Valencianes 2B', '9 OctubreB', 'Abu Masaifa','Ausias MarchA', 'Beata InesA'],
+    exits: ['Corts Valencianes 2A', 'Argenteria' ,'9 OctubreA','Reina','Ausias MarchB', 'Beata InesB'],
     longitude: 38.987684, 
     latitude:  -0.530610
 },
@@ -110,3 +110,6 @@ export const streets = {
 
 export const cityEntries = [ 'CV-645A', 'N-340A',  'Beata InesA'];
 export const cityExits = [ 'CV-645B', 'N-340B',  'Beata InesB'];
+
+
+export const getNextNode = (street) => nodes.filter(n => n.entries.includes(street))
