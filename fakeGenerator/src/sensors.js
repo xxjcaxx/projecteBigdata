@@ -4,7 +4,7 @@ import { Observable, interval, Subject, mergeMap, tap, concatMap, from } from 'r
 
 import {getNextNode} from "./data.js";
 
-export {generateMQTT,takePhoto,getSensorObject,getSensorStreetObject};
+export {generateMQTT,takePhoto,getSensorObject,getSensorStreetObject,getPoliceNotification};
 
 let client = mqtt.connect('mqtt://10.90.6.2:9001') // create a client
 //client.subscribe(`sensors/cars`);
@@ -35,8 +35,7 @@ const mqttQueue = new Subject();
 let carsRemaining = 0;
 
 const getNodeInfo = (car) => { 
-  let node =  getNextNode(car.lastStreet)[0];  
-  console.log(node);
+  let node =  getNextNode(car.lastStreet)[0]; 
   return {latitude: node.latitude, longitude: node.longitude}
 };
 
@@ -45,7 +44,7 @@ const takePhoto = async (sensorObject) => ({...sensorObject,photo: await generat
 const generateMQTT = (type) => async (sensorPromise) => {
   let dataSensor = await sensorPromise;
   //console.log(carsRemaining);
-  console.log(dataSensor);
+ // console.log(dataSensor);
   carsRemaining++;
   mqttQueue.next({topic: `sensors/${type}`, payload: JSON.stringify(dataSensor)});
 }
@@ -53,17 +52,21 @@ const generateMQTT = (type) => async (sensorPromise) => {
 mqttQueue.pipe(
  // tap(message => console.log("pipe",message.payload)),
   concatMap(message => from(generatePublishPromise(message.topic)(message.payload))),
-  tap(()=> {carsRemaining--; console.log(carsRemaining);})
+  tap(()=> {
+    carsRemaining--; 
+   // console.log(carsRemaining);
+  })
 ).subscribe()
   
 
 const getSensorStreetObject = (street) => ({
   noise: street.cars.reduce((previous,current)=> previous + current.noise,0), 
-  pollution: street.cars.reduce((previous,current)=> previous + current.pollution,0)
+  pollution: street.cars.reduce((previous,current)=> previous + current.pollution,0),
+  longitude: street.longitude, latitude: street.latitude
 });
 
 
-
+const getPoliceNotification = (car) => {}
 
 
 
