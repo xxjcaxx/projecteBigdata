@@ -3,229 +3,292 @@ export const nodes = [
         name: 'Rotonda Alkimia',
         entries: ['CV-645A', 'Corts Valencianes 1A', 'PalasietB'],
         exits: ['CV-645B', 'Corts Valencianes 1B', 'PalasietA'],
-        longitude: 38.985252,
-        latitude: -0.537441
+        latitude: 38.985252,
+        longitude: -0.537441
     },
     {
         name: 'Rotonda Simarro',
         entries: ['Alfons MagnanimA', 'Aben FerriA', 'Corts Valencianes 1B', 'Corts Valencianes 2A'],
         exits: ['Alfons MagnanimB', 'Aben FerriB', 'Corts Valencianes 1A', 'Corts Valencianes 2B'],
-        longitude: 38.986084,
-        latitude: -0.534517
+        latitude: 38.986084,
+        longitude: -0.534517
     },
     {
         name: 'Palasiet - Aben Ferri',
         entries: ['PalasietA', 'Aben FerriB', 'Argenteria'],
         exits: ['PalasietB', 'Aben FerriA'],
-        longitude: 38.985489,
-        latitude: -0.534157
+        latitude: 38.985489,
+        longitude: -0.534157
     },
     {
         name: 'Rotonda Simarro - 9 Octubre',
         entries: ['Alfons MagnanimB', '9 OctubreA'],
         exits: ['Alfons MagnanimA', '9 OctubreB'],
-        longitude: 38.987144,
-        latitude: -0.535236
+        latitude: 38.987144,
+        longitude: -0.535236
     },
     {
         name: 'Rotonda Adexa',
         entries: ['Corts Valencianes 2B', '9 OctubreB', 'Abu Masaifa', 'Ausias MarchA', 'Beata InesA'],
         exits: ['Corts Valencianes 2A', 'Argenteria', '9 OctubreA', 'Reina', 'Ausias MarchB', 'Beata InesB'],
-        longitude: 38.987684,
-        latitude: -0.530610
+        latitude: 38.987684,
+        longitude: -0.530610
     },
     {
         name: 'Rotonda Estacio',
         entries: ['Ausias MarchB', 'Ximen ToviaA'],
         exits: ['Ausias MarchA', 'Baixada estacio 1', 'Ximen ToviaB'],
-        longitude: 38.991913,
-        latitude: -0.524291
+        latitude: 38.991913,
+        longitude: -0.524291
     },
     {
         name: 'Reina - Albereda',
         entries: ['Reina', 'Baixada estacio 2'],
         exits: ['Republica Argentina', 'Albereda 1'],
-        longitude: 38.989955,
-        latitude: -0.523503
+        latitude: 38.989955,
+        longitude: -0.523503
     },
     {
         name: 'Baixada - Gregorio',
         entries: ['Gregorio Molina', 'Baixada estacio 1'],
         exits: ['Baixada estacio 2', 'Abu Masaifa'],
-        longitude: 38.991213,
-        latitude: -0.523787
+        latitude: 38.991213,
+        longitude: -0.523787
     },
     {
         name: 'Font Lleo',
         entries: ['Albereda 1', 'Carme 2'],
         exits: ['Albereda 2'],
-        longitude: 38.990122,
-        latitude: -0.519633
+        latitude: 38.990122,
+        longitude: -0.519633
     },
     {
         name: 'Cine Saetavis',
         entries: ['Carme 1', 'Republica Argentina'],
         exits: ['Carme 2', 'Academic Maravall'],
-        longitude: 38.991050,
-        latitude: -0.519778
+        latitude: 38.991050,
+        longitude: -0.519778
     },
     {
         name: 'Rotonda Arc',
         entries: ['Ximen ToviaB', 'Maulets', 'N-340A'],
         exits: ['Ximen ToviaA', 'Gregorio Molina', 'Carme 1', 'N-340B'],
-        longitude: 38.992357,
-        latitude: -0.519858
+        latitude: 38.992357,
+        longitude: -0.519858
     },
     {
         name: 'Gozalbes Vera',
         entries: ['Academic Maravall', 'Cosmografo'],
         exits: ['Maulets'],
-        longitude: 38.991249,
-        latitude: -0.518678
+        latitude: 38.991249,
+        longitude: -0.518678
     },
     {
         name: 'Placa Espanya',
         entries: ['Albereda 2', 'N-340A'],
         exits: ['Cosmografo', 'N-340B'],
-        longitude: 38.990742,
-        latitude: -0.513000
+        latitude: 38.990742,
+        longitude: -0.513000
     }
 ];
 
 
 export const streets = {
     'CV-645A': {
-        long: 574, longitude: 38.984920,
-        latitude: -0.538044
+        long: 574, 
+        latitude: 38.984920,
+        longitude: -0.538044,
+        dangerous: 0.5
     }, 'CV-645B': {
-        long: 574, longitude: 38.982627,
-        latitude: -0.543217
+        long: 574, 
+        latitude: 38.982627,
+        longitude: -0.543217,
+        dangerous: 0.5
     },
     'Corts Valencianes 1A': {
-        long: 194, longitude: 38.985471,
-        latitude: -0.536866
-    }, 'Corts Valencianes 1B': {
-        long: 194, longitude: 38.985988,
-        latitude: -0.534956
+        long: 194, 
+        latitude: 38.985471,
+        longitude: -0.536866,
+        dangerous: 0.7
+    }, 
+    'Corts Valencianes 1B': {
+        long: 194, 
+        latitude: 38.985988,
+        longitude: -0.534956,
+        dangerous: 0.7
     },
     'Corts Valencianes 2A': {
-        long: 357, longitude: 38.986305,
-        latitude: -0.534194
+        long: 357, 
+        latitude: 38.986305,
+        longitude: -0.534194,
+        dangerous: 0.1
     }, 'Corts Valencianes 2B': {
-        long: 357, longitude: 38.987231,
-        latitude: -0.530804
+        long: 357, 
+        latitude: 38.987231,
+        longitude: -0.530804,
+        dangerous: 0.1
     },
     'PalasietA': {
-        long: 275, longitude: 38.985502,
-        latitude: -0.534316
+        long: 275, 
+        latitude: 38.985502,
+        longitude: -0.534316,
+        dangerous: 0.3
     }, 'PalasietB': {
-        long: 275, longitude: 38.984985,
-        latitude: -0.536807
+        long: 275, 
+        latitude: 38.984985,
+        longitude: -0.536807,
+        dangerous: 0.3
     },
     'Alfons MagnanimA': {
-        long: 98, longitude: 38.986383,
-        latitude: -0.534718
-    }, 'Alfons MagnanimB': {
-        long: 98, longitude: 38.986983,
-        latitude: -0.535119
+        long: 98, 
+        latitude: 38.986383,
+        longitude: -0.534718,
+        dangerous: 0.8
+    }, 
+    'Alfons MagnanimB': {
+        long: 98, 
+        latitude: 38.986983,
+        longitude: -0.535119,
+        dangerous: 0.8
     },
     'Aben FerriA': {
-        long: 47, longitude: 38.985794,
-        latitude: -0.534332
-    }, 'Aben FerriB': {
-        long: 47, longitude: 38.985556,
-        latitude: -0.534174
+        long: 47, 
+        latitude: 38.985794,
+        longitude: -0.534332,
+        dangerous: 0.1
+    }, 
+    'Aben FerriB': {
+        long: 47, 
+        latitude: 38.985556,
+        longitude: -0.534174,
+        dangerous: 0.1
     },
     'Argenteria': {
-        long: 492, longitude: 38.985583,
-        latitude: -0.533428
+        long: 492, 
+        latitude: 38.985583,
+        longitude: -0.533428,
+        dangerous: 0.3
     },
     '9 OctubreA': {
-        long: 489, longitude: 38.987338,
-        latitude: -0.534790
+        long: 489, 
+        latitude: 38.987338,
+        longitude: -0.534790,
+        dangerous: 0.2
     }, '9 OctubreB': {
-        long: 489, longitude: 38.988756,
-        latitude: -0.531561
+        long: 489, 
+        latitude: 38.988756,
+        longitude: -0.531561,
+        dangerous: 0.2
     },
     'Abu Masaifa': {
-        long: 1000, longitude: 38.988443,
-        latitude: -0.529512
+        long: 1000, 
+        latitude: 38.988443,
+        longitude: -0.529512,
+        dangerous: 0.9
     },
     'Ausias MarchA': {
-        long: 656, longitude: 38.989335,
-        latitude: -0.530273
-    }, 'Ausias MarchB': {
-        long: 656, longitude: 38.991605,
-        latitude: -0.524827
+        long: 656, 
+        latitude: 38.989335,
+        longitude: -0.530273,
+        dangerous: 0.8
+    }, 
+    'Ausias MarchB': {
+        long: 656, 
+        latitude: 38.991605,
+        longitude: -0.524827,
+        dangerous: 0.8
     },
     'Beata InesA': {
-        long: 391, longitude: 38.988569,
-        latitude: -0.530786
-    }, 'Beata InesB': {
-        long: 391, longitude: 38.991154,
-        latitude: -0.532326
+        long: 391, 
+        latitude: 38.988569,
+        longitude: -0.530786,
+        dangerous: 0.1
+    }, 
+    'Beata InesB': {
+        long: 391, 
+        latitude: 38.991154,
+        longitude: -0.532326,
+        dangerous: 0.1
     },
     'Reina': {
-        long: 632, longitude: 38.989562,
-        latitude: -0.524381
+        long: 632, 
+        latitude: 38.989562,
+        longitude: -0.524381,
+        dangerous: 0.8
     },
     'Ximen ToviaA': {
-        long: 520, longitude: 38.992171,
-        latitude: -0.523674
+        long: 520, 
+        latitude: 38.992171,
+        longitude: -0.523674,
+        dangerous: 0.5
     }, 'Ximen ToviaB': {
-        long: 520, longitude: 38.993376,
-        latitude: -0.521071
+        long: 520, 
+        latitude: 38.993376,
+        longitude: -0.521071,
+        dangerous: 0.5
     },
     'Baixada estacio 1': {
-        long: 90, longitude: 38.991341,
-        latitude: -0.523865
+        long: 90, 
+        latitude: 38.991341,
+        longitude: -0.523865,
+        dangerous: 0.7
     },
     'Baixada estacio 2': {
-        long: 90, longitude: 38.990171,
-        latitude: -0.523578
+        long: 90, 
+        latitude: 38.990171,
+        longitude: -0.523578,
+        dangerous: 0.8
     },
     'Gregorio Molina': {
-        long: 332, longitude: 38.991335,
-        latitude: -0.523112
+        long: 332, 
+        latitude: 38.991335,
+        longitude: -0.523112,
+        dangerous: 0.5
     },
     'Albereda 1': {
-        long: 333, longitude: 38.990063,
-        latitude: -0.520171
+        long: 333, 
+        latitude: 38.990063,
+        longitude: -0.520171,
+        dangerous: 0.2
     },
     'Albereda 2': {
-        long: 556, longitude: 38.990272,
-        latitude: -0.513876
+        long: 556, 
+        latitude: 38.990272,
+        longitude: -0.513876,
+        dangerous: 0.2
     },
     'Carme 1': {
-        long: 100, longitude: 38.991235,
-        latitude: -0.519896
+        long: 100, 
+        latitude: 38.991235,
+        longitude: -0.519896,
+        dangerous: 0.5
     },
     'Carme 2': {
-        long: 90, longitude: 38.990233,
-        latitude: -0.519624
+        long: 90, latitude: 38.990233,
+        longitude: -0.519624, dangerous: 0.5
     },
     'Academic Maravall': {
-        long: 90, longitude: 38.991190,
-        latitude: -0.518935
+        long: 90, latitude: 38.991190,
+        longitude: -0.518935, dangerous: 0.5
     },
     'Cosmografo': {
-        long: 492, longitude: 38.991222,
-        latitude: -0.518098
+        long: 492, latitude: 38.991222,
+        longitude: -0.518098, dangerous: 0.5
     },
     'Maulets': {
-        long: 90, longitude: 38.992126,
-        latitude: -0.519033
+        long: 90, latitude: 38.992126,
+        longitude: -0.519033 ,dangerous: 0.5
     },
     'N-340A': {
-        long: 1000, longitude: 38.992605,
-        latitude: -0.519749
+        long: 1000, latitude: 38.992605,
+        longitude: -0.519749 ,dangerous: 0.1
     }, 'N-340B': {
-        long: 1000, longitude: 38.995415,
-        latitude: -0.520752
+        long: 1000, latitude: 38.995415,
+        longitude: -0.520752, dangerous: 0.1
     },
     'Republica Argentina': {
-        long: 335, longitude: 38.990853,
-        latitude: -0.520577
+        long: 335, latitude: 38.990853,
+        longitude: -0.520577, dangerous: 0.7
     }
 };
 

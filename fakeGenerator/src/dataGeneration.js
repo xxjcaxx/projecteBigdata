@@ -205,6 +205,17 @@ const initializeStreets = (originalStreets) => {
 
 const incidentSubject = new Subject();
 
+
+const getWorstStreets = (streets) => {
+    return streets.sort((a,b) => {
+        let aFactor = a.cars.length / a.carCapacity + a.dangerous + Math.random();
+        let bFactor = b.cars.length / b.carCapacity + b.dangerous + Math.random();
+        return a > b ? 1 : -1;
+    }).splice(0,10).filter(s => s);
+}
+
+const getWorsCars = (cars) => cars.sort((a,b) => a.maxSpeed > b.maxSpeed ? 1 : -1).splice(0,10).filter(s => s);
+
 const generateIncident = (streets) => {
     compose(
         car => (incidentSubject.next(car),car), 
@@ -212,8 +223,10 @@ const generateIncident = (streets) => {
         log,
                
         getRandomArray,
+        getWorsCars,
         s => s.cars,
         getRandomArray,
+        getWorstStreets,
         FILTER(s=> s.cars.length > 1)
         )(streets)
 }
