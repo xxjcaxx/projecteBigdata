@@ -77,8 +77,8 @@ const getSensorStreetObject = (ambientState) => (street) => ({
   longitude: street.longitude, latitude: street.latitude,
   date: ambientState.hour, 
   humidity: ambientState.humidity + (Math.random()* 2 - 1),
-  light: ambientState.light,
-  raining: ambientState.raining
+  light: ambientState.light + (Math.random()* 2 - 1),
+  raining: ambientState.raining+ (Math.random()* 2 - 1)
 });
 
 

@@ -104,7 +104,7 @@ const assignCarsToStreets = (streets) =>
 const getSecondsToCanCross = (currentStreetLong) => (car) => currentStreetLong / (car.maxSpeed * (Math.random() + 0.2))
 const updateSecondsToCanCross = (cars) => {
     cars.forEach(car => {
-        car.secondsToCanCross = car.secondsToCanCross > 0 ? car.secondsToCanCross - 1 : 0;
+        car.secondsToCanCross = car.secondsToCanCross > 1 ? car.secondsToCanCross - 1 : 0;
         car.secondsNotCrossing = car.secondsToCanCross <= 0 ? car.secondsNotCrossing + 1 : 0;
     });
     return cars;
@@ -116,13 +116,12 @@ const updateSecondsToCanCross = (cars) => {
 });
 }*/
 
-const crossCar = (streets) => (car) => {
-
+const crossCar = (streets,ambientState) => (car) => {
     streets[car.currentStreet].cars = streets[car.currentStreet].cars.slice(1);
     car.lastStreet = car.currentStreet;
-    if (car.route.indexOf(car.currentStreet) < car.route.length - 1) {
+    if (car.route.indexOf(car.currentStreet) < car.route.length -1) {
         car.currentStreet = car.route[car.route.indexOf(car.currentStreet) + 1];
-        car.secondsToCanCross = getSecondsToCanCross(streets[car.currentStreet].long)(car);
+        car.secondsToCanCross = getSecondsToCanCross(streets[car.currentStreet].long + ambientState.raining)(car);
         streets[car.currentStreet].cars.push(car);
     } else {
         car.currentStreet = -1;
@@ -214,20 +213,22 @@ const getWorstStreets = (streets) => {
     }).splice(0,10).filter(s => s);
 }
 
-const getWorsCars = (cars) => cars.sort((a,b) => a.maxSpeed > b.maxSpeed ? 1 : -1).splice(0,10).filter(s => s);
+const getWorsCars = (cars) => [...cars].sort((a,b) => a.maxSpeed > b.maxSpeed ? 1 : -1).splice(0,10).filter(s => s);
 
 const generateIncident = (streets) => {
     compose(
-        car => (incidentSubject.next(car),car), 
-        car => (car.secondsToCanCross = Math.round(Math.random()*100)+100,car),
-        log,
+      //  log,
+        car => {incidentSubject.next(car); return car}, 
+        car => { car.secondsToCanCross = Math.round(Math.random()*100)+100; return car},
+       // log,
                
         getRandomArray,
         getWorsCars,
         s => s.cars,
+       // log,
         getRandomArray,
         getWorstStreets,
-        FILTER(s=> s.cars.length > 1)
+        FILTER(s=> s.cars.length > 1),
         )(streets)
 }
 
