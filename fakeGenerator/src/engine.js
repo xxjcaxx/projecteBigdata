@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         carsThatCanCross.filter(car => car.currentStreet != -1).forEach(compose(
             //generateMQTT('cars'),
            // takePhoto,
-         //   enqueueMqtt('cars'),
+            enqueueMqtt('cars'),
             getSensorObject(ambientState)
         ));
 
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             compose(
                 //generateMQTT('streets'),
                 //log,
-            //    enqueueMqtt('streets'),
+                enqueueMqtt('streets'),
                 getSensorStreetObject(ambientState))
         );
 

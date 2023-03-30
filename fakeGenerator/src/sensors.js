@@ -72,13 +72,14 @@ mqttQueue.pipe(
   
 
 const getSensorStreetObject = (ambientState) => (street) => ({
-  noise: street.cars.reduce((previous,current)=> previous + current.noise,0), 
-  pollution: street.cars.reduce((previous,current)=> previous + current.pollution,0),
+  noise: street.cars.reduce((previous,current)=> previous + current.noise,0) / street.long, 
+  pollution: street.cars.reduce((previous,current)=> previous + current.pollution,0) / street.long,
   longitude: street.longitude, latitude: street.latitude,
   date: ambientState.hour, 
   humidity: ambientState.humidity + (Math.random()* 2 - 1),
   light: ambientState.light + (Math.random()* 2 - 1),
-  raining: ambientState.raining+ (Math.random()* 2 - 1)
+  raining: ambientState.raining+ (Math.random()* 2 - 1),
+  streetLong: street.long
 });
 
 
