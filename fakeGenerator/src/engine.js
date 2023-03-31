@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         regenerateCarList(OriginalCars);
 
         //Some of the exited cars can return to the circuit in the same street they finished
-        let candidateToEnter = activityHours[ambientState.hour.getHours()]/100 >= Math.random() ? getCandidateToEnter(OriginalCars) : null;
+        let candidateToEnter = activityHours[ambientState.hour.getHours()]/100 >= Math.random() ? getCandidateToEnter(OriginalCars,ambientState.hour) : null;
         if (candidateToEnter) {
             compose(
                 car => (streetsState[car.currentStreet].cars.push(car)),

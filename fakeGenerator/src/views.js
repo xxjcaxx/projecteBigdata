@@ -1,3 +1,4 @@
+import { INTERVAL } from "./data.js";
 import {compose,MAP,log,intToRGB,hashCode} from "./functionalUtils.js"
 export {createCarsTable,createStreetsTable};
 
@@ -12,7 +13,7 @@ const createCarRow = (car) => `<tr>
 </tr>`;
 const createCarsTable = (cars) => createTable(createCarRow)(cars);
 
-const generateGaps = (street) => Array(Math.ceil(street.cars[0].secondsToCanCross)).fill(0).map(()=> `<span></span>`).join('')
+const generateGaps = (street) => Array(Math.ceil(street.cars[0].secondsToCanCross /INTERVAL)).fill(0).map(()=> `<span></span>`).join('')
 
 const createStreetRow = (street) => `
 <tr>

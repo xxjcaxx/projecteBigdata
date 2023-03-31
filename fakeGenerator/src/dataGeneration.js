@@ -1,7 +1,7 @@
 export {initializeStreets,assignCarsToStreets,removeExitCars,crossCar,getCarsCanCross,reenterCar,generateOriginalCars,regenerateCarList,generateIncident,getCandidateToEnter, getCandidatesToEnter,incidentSubject};
 import { interval, Subject } from "rxjs";
 import { compose, MAP, log, FILTER, getRandomArray, doIfRandom } from "./functionalUtils.js";
-import { nodes, streets, cityEntries, cityExits, staticCars } from "./data.js";
+import { nodes, streets, cityEntries, cityExits, staticCars, INTERVAL, routines } from "./data.js";
 
 const arrayStreets = Object.keys(streets);
 
@@ -58,7 +58,7 @@ const generateRoutes = (n, nodes, arrayStreets) => {
     }
     while (routes.length < n * 2) {
         let route = generateSingleRouteToHome(cityExits)(cityEntries)(home);
-        if (route.at(-1)) {
+        if (route.at(-1) && route.at(-1) == home) {
             routes.push(route);
         }
     }
@@ -84,7 +84,8 @@ const carGenerator = (img, id) => {
     secondsToCanCross: 0,
     secondsNotCrossing: 0,
     lastStreet: '',
-    routeStepNumber: 0
+    routeStepNumber: 0,
+    routine: getRandomArray(routines)  // 0-6 , 6-10, 10-14, 14-19, 19-23
 }};
 
 // Remove cars that had exited the city
@@ -95,7 +96,7 @@ const addStartRoute = (car) => (route) => (car.route = route, car);
 const carCurrentStreet = (car) => (car.currentStreet = car.route[0], car);
 // Inizialize a car with a random route and the start of the route
 const carStartRoute = (car) => compose(doIfRandom(0.5)(car => (car.lastStreet = car.currentStreet, car.currentStreet = -1, car)), carCurrentStreet, addStartRoute(car), getRandomArray)(car.routes);
-
+ 
 // 
 const assignCarsToStreets = (streets) =>
     (cars) => cars.map(car => (streets[car.currentStreet]
@@ -104,8 +105,8 @@ const assignCarsToStreets = (streets) =>
 const getSecondsToCanCross = (currentStreetLong) => (car) => currentStreetLong / (car.maxSpeed * (Math.random() + 0.2))
 const updateSecondsToCanCross = (cars) => {
     cars.forEach(car => {
-        car.secondsToCanCross = car.secondsToCanCross > 1 ? car.secondsToCanCross - 1 : 0;
-        car.secondsNotCrossing = car.secondsToCanCross <= 0 ? car.secondsNotCrossing + 1 : 0;
+        car.secondsToCanCross = car.secondsToCanCross > 1 ? car.secondsToCanCross - INTERVAL : 0;
+        car.secondsNotCrossing = car.secondsToCanCross <= 0 ? car.secondsNotCrossing + INTERVAL : 0;
     });
     return cars;
 }
@@ -180,12 +181,14 @@ const regenerateCarList = (cars) => compose(
     updateSecondsToCanCross
 )(cars);
 
+const getHourInterval = (hour) => [0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,3,4,4,4,4,4][hour.getHours()]
+const carCanEnter = (hour) => (car) => car.routine[getHourInterval(hour)] >= Math.random()*100;
 
+const getCandidatesToEnter =(OriginalCars) => OriginalCars.filter(car => car.currentStreet === -1 && car.lastStreet);
 
-const getCandidatesToEnter = (OriginalCars) => OriginalCars.filter(car => car.currentStreet === -1 && car.lastStreet);
-
-const getCandidateToEnter = (OriginalCars) => compose(
+const getCandidateToEnter = (OriginalCars,hour) => compose(
     getRandomArray,
+    FILTER(carCanEnter(hour)),
     getCandidatesToEnter
     //FILTER(car => car.currentStreet === -1 && car.lastStreet)
 )(OriginalCars);
