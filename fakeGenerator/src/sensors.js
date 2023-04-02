@@ -3,10 +3,11 @@ import mqtt from "mqtt/dist/mqtt"; // import everything inside the mqtt module a
 import { Observable, interval, Subject, mergeMap, tap, concatMap, from } from 'rxjs';
 
 import {getNextNode} from "./data.js";
+import { doIfRandom } from "./functionalUtils.js";
 
-export {generateMQTT,takePhoto,getSensorObject,getSensorStreetObject,getPoliceNotification,enqueueMqtt};
+export {generateMQTT,takePhoto,getSensorObject,getSensorStreetObject,getPoliceNotification,enqueueMqtt,addNoiseToSensorStreet};
 
-let client = mqtt.connect('mqtt://10.90.6.2:9001') // create a client
+//let client = mqtt.connect('mqtt://10.90.6.2:9001') // create a client
 //client.subscribe(`sensors/cars`);
 
 const getReaderPromise = (blob) => new Promise((resolve)=>{
@@ -23,13 +24,13 @@ const generatePhoto = async (photoURL) => {
     return dataURL;
 }
 
-const generatePublishPromise = (topic) => (payload) => new Promise((resolve)=>{
+/*const generatePublishPromise = (topic) => (payload) => new Promise((resolve)=>{
   //console.log("Start",payload);
   client.publish(topic, payload,  { qos: 2, retain: false }, ()=>{
   //  console.log("publish", payload);
     resolve();
   });
-});
+});*/
 
 
 const generateBackendPromise = (topic) => (payload) => fetch(`http://10.90.6.2:3000/${topic}`,{
@@ -76,11 +77,20 @@ const getSensorStreetObject = (ambientState) => (street) => ({
   pollution: street.cars.reduce((previous,current)=> previous + current.pollution,0) / street.long,
   longitude: street.longitude, latitude: street.latitude,
   date: ambientState.hour, 
-  humidity: ambientState.humidity + (Math.random()* 2 - 1),
+ // humidity: ambientState.humidity + (Math.random()* 2 - 1),
   light: ambientState.light + (Math.random()* 2 - 1),
   raining: ambientState.raining+ (Math.random()* 2 - 1),
   streetLong: street.long
 });
+
+const addNoiseToSensorStreet = (street) => {
+  let sensorStreetCopy = {...street};
+  doIfRandom(0.0001)(()=> sensorStreetCopy.light = Math.random()> 0.5 ? 0 : 1000);
+  doIfRandom(0.0001)(()=> sensorStreetCopy.raining = Math.random()> 0.5 ? -100 : 1000);
+  doIfRandom(0.0001)(()=> sensorStreetCopy.noise = Math.random()> 0.5 ? 0 : 1000);
+  doIfRandom(0.0001)(()=> sensorStreetCopy.pollution = Math.random()> 0.5 ? 0 : 1000);
+
+}
 
 
 const getPoliceNotification = (car) => {}

@@ -1,7 +1,7 @@
 import { nodes, streets, cityEntries, cityExits, staticCars } from "./data.js";
 import { compose, MAP, log, FILTER, getRandomArray, doIfRandom } from "./functionalUtils.js";
 import { createCarsTable, createStreetsTable } from "./views.js";
-import { generateMQTT, takePhoto, getSensorObject, getSensorStreetObject, getPoliceNotification, enqueueMqtt } from "./sensors.js";
+import { generateMQTT, takePhoto, getSensorObject, getSensorStreetObject, getPoliceNotification, enqueueMqtt, addNoiseToSensorStreet } from "./sensors.js";
 import "./style.css";
 import { interval, Subject } from "rxjs";
 import {initializeStreets,assignCarsToStreets,removeExitCars,crossCar,getCarsCanCross,reenterCar,generateOriginalCars,regenerateCarList,generateIncident,getCandidateToEnter,getCandidatesToEnter,incidentSubject} from "./dataGeneration.js";
@@ -15,16 +15,17 @@ const incrementAmbientState = (ambientState) => {
     cloudy = cloudy <= 0 ? 0 : cloudy;
     cloudy = cloudy <= 100 ? cloudy : 100;
     let raining = cloudy > 95 ? ambientState.raining + ambientStateTendency.toCloudy : 0;
-    let humidity = raining > 0 ? 100 : ambientState.humidity + (Math.random() * 1 - 0.5);
-    let light = (suncalc.getPosition(ambientState.hour,38.985471,-0.536866).altitude * 180 / Math.PI) / 90 * 100 - (cloudy * 0.2);
+   // let humidity = raining > 0 ? 100 : ambientState.humidity + (Math.random() * (cloudy/100) - 0.5);
+    let light = (suncalc.getPosition(ambientState.hour,38.985471,-0.536866).altitude * 180 / Math.PI) / 90 * 100 - (cloudy * 0.1);
     light = light < 1 ? 1 : light;
-    let dangerFactor = (3*raining - 2*light + humidity) / 3;
+    let dangerFactor = (3*raining + 2*(100/light)) / 4;
+    dangerFactor = dangerFactor < 5 ? 0.005 : dangerFactor  * 0.0002 + 0.01 ;
 
-    doIfRandom(0.001)(()=> { ambientStateTendency.toCloudy = Math.random() - 0.6; console.log("Cambio climatico"); } )(); 
+    doIfRandom(0.001)(()=> { ambientStateTendency.toCloudy = (Math.random() - 0.7)*0.1; console.log("Cambio climatico"); } )(); 
 
     return {
         hour: new Date(ambientState.hour.getTime()+10*1000),
-        humidity: humidity,
+        //humidity: humidity,
         light: light,
         cloudy: cloudy,
         raining: raining <= 100 ? raining : 100,
@@ -34,7 +35,7 @@ const incrementAmbientState = (ambientState) => {
 }
 
 
-const activityHours = [50, 40, 30, 20, 10, 10, 20, 60, 100, 90, 80, 80, 90, 90, 90, 80, 80, 90, 100, 100, 100, 90, 80, 70, 50];
+const activityHours = [50, 40, 30, 20, 10, 20, 50, 60, 100, 100, 80, 60, 90, 90, 90, 80, 60, 90, 100, 100, 90, 70, 50, 40, 40];
 //                     0   1    2  3   4   5   6   7   8    9   10   11  12  13  14 15  16   17  18   19  20  21    22  23  24
 
 // Start of app
@@ -43,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let ambientState = {
         hour: new Date(),
-        humidity: 50,
+       // humidity: 50,
         light: 50,
         cloudy: 94,
         raining: 0,
@@ -68,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // We get the first car of every street and, if can cross, it cross
 
          // There is a small probability of incident where a car increase the time to can exit a lot
-         doIfRandom(ambientState.dangerFactor * 0.0002 + 0.01 )(generateIncident)(Object.values(streetsState));
+         doIfRandom(ambientState.dangerFactor)(generateIncident)(Object.values(streetsState));
 
 
         let carsThatCanCross = getCarsCanCross(streetsState);
@@ -78,19 +79,19 @@ document.addEventListener('DOMContentLoaded', () => {
         regenerateCarList(OriginalCars);
 
         //Some of the exited cars can return to the circuit in the same street they finished
-        let candidateToEnter = activityHours[ambientState.hour.getHours()]/100 >= Math.random() ? getCandidateToEnter(OriginalCars,ambientState.hour) : null;
-        if (candidateToEnter) {
+        let candidateToEnter = activityHours[ambientState.hour.getHours()]/100 >= Math.random() ? getCandidateToEnter(OriginalCars,ambientState.hour) : [];
+        candidateToEnter.map(c => {
             compose(
                 car => (streetsState[car.currentStreet].cars.push(car)),
-                reenterCar)(candidateToEnter)
-        }
+                reenterCar)(c)
+        });
 
        
         
 
         // We show the result
         document.querySelector('#streetList table').innerHTML = createStreetsTable(Object.entries(streetsState));
-        document.querySelector('#totalCars').innerHTML = `Hour: ${ambientState.hour.toLocaleString()} Cars: ${999 - getCandidatesToEnter(OriginalCars).length} <br> H: ${Math.round(ambientState.humidity)} L: ${Math.round(ambientState.light)} Cloudy: ${Math.round(ambientState.cloudy)} ${Math.round(ambientState.ambientStateTendency.toCloudy * 100)} Raining: ${Math.round(ambientState.raining)} Danger: ${ Math.round(1000*ambientState.dangerFactor * 0.0002 + 0.01)}`;
+        document.querySelector('#totalCars').innerHTML = `Hour: ${ambientState.hour.toLocaleString()} Cars: ${999 - getCandidatesToEnter(OriginalCars).length} <br> L: ${Math.round(ambientState.light)} Cloudy: ${Math.round(ambientState.cloudy)} ${Math.round(ambientState.ambientStateTendency.toCloudy * 100)} Raining: ${Math.round(ambientState.raining)} Danger: ${ ambientState.dangerFactor }`;
         document.querySelector('#carList table').innerHTML = createCarsTable(OriginalCars);
 
         /// Sensors Turn
@@ -98,7 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
         carsThatCanCross.filter(car => car.currentStreet != -1).forEach(compose(
             //generateMQTT('cars'),
            // takePhoto,
-            enqueueMqtt('cars'),
+           // enqueueMqtt('cars'),
+           addNoiseToSensorStreet,
             getSensorObject(ambientState)
         ));
 
@@ -109,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
             compose(
                 //generateMQTT('streets'),
                 //log,
-                enqueueMqtt('streets'),
+             //   enqueueMqtt('streets'),
                 getSensorStreetObject(ambientState))
         );
 
