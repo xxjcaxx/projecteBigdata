@@ -49,7 +49,7 @@ const getNodeInfo = (car) => {
   return node ? {latitude: node.latitude, longitude: node.longitude} : {latitude: 0, longitude: 0};
 };
 
-const getSensorObject =(ambientState)=> (car) => ({photo: car.img, enter: car.lastStreet, exit: car.currentStreet, time: ambientState.hour, ...getNodeInfo(car)});
+const getSensorObject =(ambientState)=> (car) => ({photo: car.img, enter: car.lastStreet, exit: car.currentStreet, date: ambientState.hour, ...getNodeInfo(car)});
 const takePhoto = async (sensorObject) => ({...sensorObject,photo: await generatePhoto(sensorObject.photo)});
 const generateMQTT = (type) => async (sensorPromise) => {
   let dataSensor = await sensorPromise;
@@ -89,7 +89,7 @@ const addNoiseToSensorStreet = (street) => {
   doIfRandom(0.0001)(()=> sensorStreetCopy.raining = Math.random()> 0.5 ? -100 : 1000);
   doIfRandom(0.0001)(()=> sensorStreetCopy.noise = Math.random()> 0.5 ? 0 : 1000);
   doIfRandom(0.0001)(()=> sensorStreetCopy.pollution = Math.random()> 0.5 ? 0 : 1000);
-
+  return sensorStreetCopy;
 }
 
 

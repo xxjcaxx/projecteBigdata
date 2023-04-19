@@ -41,7 +41,7 @@ app.post('/sensors/:type', async (req,res) => {
  let sensor = req.body;
  let sensorPhoto = {...sensor};
  if (sensor.photo) {
-  sensorPhoto = {...sensor,photo: await generatePhoto(`./cars/${sensor.photo}`)};
+  sensorPhoto = {...sensor,photo: await generatePhoto(`./cars/cars${Math.ceil(Math.random()*5)}/${sensor.photo}`)};
  }
 
    //console.log(sensorPhoto);
