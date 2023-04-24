@@ -35,8 +35,17 @@ const incrementAmbientState = (ambientState) => {
 }
 
 
-const activityHours = [50, 40, 30, 20, 10, 20, 50, 60, 100, 100, 80, 60, 90, 90, 90, 80, 60, 90, 100, 100, 90, 70, 50, 40, 40];
-//                     0   1    2  3   4   5   6   7   8    9   10   11  12  13  14 15  16   17  18   19  20  21    22  23  24
+const activityHours = [
+                    [20, 20, 20, 20, 10, 20, 50, 70, 100, 100, 80, 60, 90, 90, 90, 80, 60, 90, 100, 100, 90, 70, 50, 60, 40],
+                    [50, 40, 30, 20, 10, 20, 50, 60, 900, 100, 90, 60, 90, 90, 90, 80, 60, 90, 100, 100, 90, 70, 50, 40, 40],
+                    [50, 40, 30, 20, 10, 20, 50, 60, 100, 100, 80, 60, 90, 90, 90, 80, 60, 90, 100, 100, 90, 70, 50, 40, 40],
+                    [50, 40, 30, 20, 10, 20, 50, 60, 100, 100, 80, 60, 90, 90, 90, 80, 60, 90, 100, 100, 90, 70, 50, 40, 40],
+                    [60, 60, 40, 30, 30, 20, 50, 60, 100, 100, 90, 70, 90, 90, 90, 80, 50, 90, 100, 100, 90, 70, 60, 50, 40],
+                    [70, 60, 40, 20, 30, 30, 50, 50, 50,  50,  70, 60, 90, 90, 90, 80, 60, 90, 100, 100, 100, 100, 90, 90, 40],
+                    [80, 70, 50, 20, 10, 20, 50, 20, 20,  20, 30, 40,  60, 90, 90, 80, 60, 90, 100, 100, 40, 30, 20, 10, 40]];
+//                   0   1    2  3   4   5   6   7   8    9   10   11  12  13  14 15  16   17  18   19  20  21    22  23  24
+
+
 
 // Start of app
 
@@ -61,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     compose(assignCarsToStreets(streetsState), removeExitCars)(OriginalCars);
     console.log("Original Cars: ", OriginalCars);
 
-    interval(1000).subscribe(function mainIntervalCallback(step) {
+    interval(500).subscribe(function mainIntervalCallback(step) {
 
         ambientState = incrementAmbientState(ambientState);
         //console.log(ambientState,ambientStateTendency);
@@ -79,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         regenerateCarList(OriginalCars);
 
         //Some of the exited cars can return to the circuit in the same street they finished
-        let candidateToEnter = activityHours[ambientState.hour.getHours()]/100 >= Math.random() ? getCandidateToEnter(OriginalCars,ambientState.hour) : [];
+        let candidateToEnter = activityHours[ambientState.hour.getDay()-1][ambientState.hour.getHours()]/100 >= Math.random() ? getCandidateToEnter(OriginalCars,ambientState.hour) : [];
         candidateToEnter.map(c => {
             compose(
                 car => (streetsState[car.currentStreet].cars.push(car)),
@@ -91,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // We show the result
         document.querySelector('#streetList table').innerHTML = createStreetsTable(Object.entries(streetsState));
-        document.querySelector('#totalCars').innerHTML = `Hour: ${ambientState.hour.toLocaleString()} Cars: ${999 - getCandidatesToEnter(OriginalCars).length} <br> L: ${Math.round(ambientState.light)} Cloudy: ${Math.round(ambientState.cloudy)} ${Math.round(ambientState.ambientStateTendency.toCloudy * 100)} Raining: ${Math.round(ambientState.raining)} Danger: ${ ambientState.dangerFactor }`;
+        document.querySelector('#totalCars').innerHTML = `Hour: ${ambientState.hour.getDay()} ${ambientState.hour.toLocaleString()} Cars: ${999 - getCandidatesToEnter(OriginalCars).length} <br> L: ${Math.round(ambientState.light)} Cloudy: ${Math.round(ambientState.cloudy)} ${Math.round(ambientState.ambientStateTendency.toCloudy * 100)} Raining: ${Math.round(ambientState.raining)} Danger: ${ ambientState.dangerFactor }`;
         document.querySelector('#carList table').innerHTML = createCarsTable(OriginalCars);
 
         /// Sensors Turn
