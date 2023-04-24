@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     compose(assignCarsToStreets(streetsState), removeExitCars)(OriginalCars);
     console.log("Original Cars: ", OriginalCars);
 
-    interval(500).subscribe(function mainIntervalCallback(step) {
+    interval(200).subscribe(function mainIntervalCallback(step) {
 
         ambientState = incrementAmbientState(ambientState);
         //console.log(ambientState,ambientStateTendency);
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
 
     incidentSubject.subscribe(compose(
-        getPoliceNotification,
+        getPoliceNotification(ambientState.hour),
         log
         ));
 

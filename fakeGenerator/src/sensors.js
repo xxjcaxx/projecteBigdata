@@ -3,9 +3,11 @@ import mqtt from "mqtt/dist/mqtt"; // import everything inside the mqtt module a
 import { Observable, interval, Subject, mergeMap, tap, concatMap, from } from 'rxjs';
 
 import {getNextNode} from "./data.js";
-import { doIfRandom } from "./functionalUtils.js";
+import { doIfRandom, getRandomArray } from "./functionalUtils.js";
 
 export {generateMQTT,takePhoto,getSensorObject,getSensorStreetObject,getPoliceNotification,enqueueMqtt,addNoiseToSensorStreet};
+
+import { Bot } from "./jsbot.js";
 
 //let client = mqtt.connect('mqtt://10.90.6.2:9001') // create a client
 //client.subscribe(`sensors/cars`);
@@ -93,7 +95,24 @@ const addNoiseToSensorStreet = (street) => {
 }
 
 
-const getPoliceNotification = (car) => {}
+
+let SNetworkMessages = [];
+fetch('./messagesPatterns.json').then(response => response.json()).then(data => SNetworkMessages=data.messages);
+
+//6002727154:AAHqofuHXQ9o0MhxS-1bpUezxnUrkM_YesU
+const bot = new Bot("6002727154:AAHqofuHXQ9o0MhxS-1bpUezxnUrkM_YesU")
+
+const getPoliceNotification = (date) => (car) => {
+  
+  let street = car.currentStreet;
+  let plate = `AC${('000'+car.id).slice(-3)}KS`;
+  let message = getRandomArray(SNetworkMessages);
+  message = message.replaceAll(`{{street}}`,street);
+  message = message.replaceAll(`{{carplate}}`,plate);
+  message = date.toLocaleDateString('en-GB')+" "+date.toLocaleTimeString('en-GB')+" "+message;
+  console.log(message);
+  //bot.sendMessage(message, "-529232276", null, true).catch(e=> console.error(e));
+}
 
 
 
