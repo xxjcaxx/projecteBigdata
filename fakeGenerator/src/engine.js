@@ -1,7 +1,7 @@
 import { nodes, streets, cityEntries, cityExits, staticCars } from "./data.js";
 import { compose, MAP, log, FILTER, getRandomArray, doIfRandom } from "./functionalUtils.js";
 import { createCarsTable, createStreetsTable } from "./views.js";
-import { generateMQTT, takePhoto, getSensorObject, getSensorStreetObject, getPoliceNotification, enqueueMqtt, addNoiseToSensorStreet } from "./sensors.js";
+import { generateMQTT, takePhoto, getSensorObject, getSensorStreetObject, getPoliceNotification, enqueueMqtt, addNoiseToSensorStreet, sendSensorStreet, sendSensorCar } from "./sensors.js";
 import "./style.css";
 import { interval, Subject } from "rxjs";
 import {initializeStreets,assignCarsToStreets,removeExitCars,crossCar,getCarsCanCross,reenterCar,generateOriginalCars,regenerateCarList,generateIncident,getCandidateToEnter,getCandidatesToEnter,incidentSubject} from "./dataGeneration.js";
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // We get the first car of every street and, if can cross, it cross
 
          // There is a small probability of incident where a car increase the time to can exit a lot
-         doIfRandom(ambientState.dangerFactor)(generateIncident)(Object.values(streetsState));
+        doIfRandom(ambientState.dangerFactor)(generateIncident)(Object.values(streetsState));
 
 
         let carsThatCanCross = getCarsCanCross(streetsState);
@@ -95,8 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 reenterCar)(c)
         });
 
-       
-        
 
         // We show the result
         document.querySelector('#streetList table').innerHTML = createStreetsTable(Object.entries(streetsState));
@@ -105,25 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         /// Sensors Turn
         // Every node has a camera that takes a photo when pass a car
-        carsThatCanCross.filter(car => car.currentStreet != -1).forEach(compose(
-            //generateMQTT('cars'),
-           // takePhoto,
-            enqueueMqtt('cars'),
-           
-            getSensorObject(ambientState)
-        ));
-
-        //console.log(carsThatCanCross.filter(car => car.currentStreet != -1).length)
-
+        carsThatCanCross.filter(car => car.currentStreet != -1).forEach(sendSensorCar(ambientState));
+            
         // Every street has a sensor of noise, pollution, temperature
-        Object.values(streetsState).forEach(
-            compose(
-                //generateMQTT('streets'),
-                //log,
-                enqueueMqtt('streets'),
-                addNoiseToSensorStreet,
-                getSensorStreetObject(ambientState))
-        );
+        Object.values(streetsState).forEach(sendSensorStreet(ambientState));
 
     });
 
