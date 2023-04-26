@@ -1,51 +1,13 @@
-import mqtt from "mqtt/dist/mqtt"; // import everything inside the mqtt module and give it the namespace "mqtt"
-
-import { Observable, interval, Subject, mergeMap, tap, concatMap, from } from 'rxjs';
+//import { Observable, interval, Subject, mergeMap, tap, concatMap, from } from 'rxjs';
 
 import {getNextNode} from "./data.js";
 import { compose, doIfRandom, getRandomArray } from "./functionalUtils.js";
 
-export {generateMQTT,getSensorObject,getSensorStreetObject, sendSensorStreet, sendSensorCar, getPoliceNotification,enqueueMqtt,addNoiseToSensorStreet};
+export {getSensorObject,getSensorStreetObject, sendSensorStreet, sendSensorCar, getPoliceNotification,enqueueMqtt,addNoiseToSensorStreet};
 
 import { Bot } from "./jsbot.js";
 
 const sensorsWorker = new Worker(new URL('sensorsWorker.js', import.meta.url));
-
-//let client = mqtt.connect('mqtt://10.90.6.2:9001') // create a client
-//client.subscribe(`sensors/cars`);
-/*
-const getReaderPromise = (blob) => new Promise((resolve)=>{
-  let reader = new FileReader();
-  reader.addEventListener('load',()=> resolve(reader.result));
-  reader.readAsDataURL(blob);
-});*/
-/*
-const generatePhoto = async (photoURL) => {
-    let response = await fetch(`./cars/${photoURL}`);
-    let photoBlob = await response.blob();
-    let dataURL = await getReaderPromise(photoBlob);
-   
-    return dataURL;
-}
-*/
-/*const generatePublishPromise = (topic) => (payload) => new Promise((resolve)=>{
-  //console.log("Start",payload);
-  client.publish(topic, payload,  { qos: 2, retain: false }, ()=>{
-  //  console.log("publish", payload);
-    resolve();
-  });
-});*/
-
-
-/*const generateBackendPromise = (topic) => (payload) => fetch(`http://10.90.6.2:3000/${topic}`,{
-  method: 'post',
-  headers: {
-    "Content-type": "application/json; charset=UTF-8"
-  },
-  body: payload
-})*/
-
-//const mqttQueue = new Subject();
 
 const getNodeInfo = (car) => { 
   let node = getNextNode(car.lastStreet)[0] ; 
@@ -53,27 +15,10 @@ const getNodeInfo = (car) => {
 };
 
 const getSensorObject =(ambientState)=> (car) => ({photo: car.img, enter: car.lastStreet, exit: car.currentStreet, date: ambientState.hour, ...getNodeInfo(car)});
-//const takePhoto = async (sensorObject) => ({...sensorObject,photo: await generatePhoto(sensorObject.photo)});
-const generateMQTT = (type) => async (sensorPromise) => {
-  let dataSensor = await sensorPromise;
-  //console.log(carsRemaining);
- // console.log(dataSensor);
-  mqttQueue.next({topic: `sensors/${type}`, payload: JSON.stringify(dataSensor)});
-}
 
 const enqueueMqtt = (type) => (dataSensor) => {
- // mqttQueue.next({topic: `sensors/${type}`, payload: JSON.stringify(dataSensor)})
  sensorsWorker.postMessage({type,dataSensor})
 }
-
-
-/*mqttQueue.pipe(
- // tap(message => console.log("pipe",message.payload)),
-  concatMap(message => from(generateBackendPromise(message.topic)(message.payload))),
-  tap(()=> {
-   // console.log(carsRemaining);
-  })
-).subscribe()*/
   
 
 const getSensorStreetObject = (ambientState) => (street) => ({

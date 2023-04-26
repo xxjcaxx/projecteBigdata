@@ -15,13 +15,17 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
+function initCLientMQTT(){
+  let client = mqtt.connect('mqtt://localhost:1883'); // create a client
+  console.log("connected flag  "+client.connected);
+  client.on("connect",function(){	
+    console.log("connected");
+  });
+  client.on("error",function(error){ console.log("Can't connect"+error)});
+  return client;
+}
 
-let client = mqtt.connect('mqtt://localhost:1883'); // create a client
-console.log("connected flag  "+client.connected);
-client.on("connect",function(){	
-  console.log("connected");
-});
-client.on("error",function(error){ console.log("Can't connect"+error)});
+//let client = initCLientMQTT();
 
 function base64_encode(file) {
   return "data:image/gif;base64,"+fs.readFileSync(file, 'base64');
@@ -36,24 +40,28 @@ const generatePhoto = async (photoURL) => {
 }
 
 app.post('/sensors/:type', async (req,res) => {
-  //console.log(req.body);
+  console.log(req.body);
  // res.send('Hello')
- let sensor = req.body;
- let sensorPhoto = {...sensor};
- if (sensor.photo) {
-  sensorPhoto = {...sensor,photo: await generatePhoto(`./cars/cars${Math.ceil(Math.random()*5)}/${sensor.photo}`)};
+ let sensors = [req.body];
+
+ for(let sensor of sensors){
+  let sensorPhoto = {...sensor};
+  if (sensor.photo) {
+   sensorPhoto = {...sensor,photo: await generatePhoto(`./cars/cars${Math.ceil(Math.random()*5)}/${sensor.photo}`)};
+  }
+ 
+    //console.log(sensorPhoto);
+   /* client.publish('sensors/'+req.params['type'], JSON.stringify(sensorPhoto),  ()=>{
+       console.log("publish");
+     });*/
+     console.log(sensor);
+   res.json(sensor)
  }
 
-   //console.log(sensorPhoto);
-   client.publish('sensors/'+req.params['type'], JSON.stringify(sensorPhoto),  ()=>{
-      console.log("publish");
-    });
-    console.log(sensor);
-  res.json(sensor)
 })
 
 
-app.post('/sensors/streets')
+//app.post('/sensors/streets')
 
 app.listen(port, () => {
   console.log(`Sensors app listening on port ${port}`)
