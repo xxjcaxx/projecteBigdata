@@ -53,12 +53,15 @@ const getPoliceNotification = (date) => (car) => {
   
   let street = car.currentStreet;
   let plate = `AC${('000'+car.id).slice(-3)}KS`;
-  let message = getRandomArray(SNetworkMessages);
-  message = message.replaceAll(`{{street}}`,street);
-  message = message.replaceAll(`{{carplate}}`,plate);
-  message = date.toLocaleDateString('en-GB')+" "+date.toLocaleTimeString('en-GB')+" "+message;
-  console.log(message);
-  //bot.sendMessage(message, "-529232276", null, true).catch(e=> console.error(e));
+  for(let i=0; i<Math.random()*4;i++){
+    let message = getRandomArray(SNetworkMessages);
+    message = message.replaceAll(`{{street}}`,street);
+    message = message.replaceAll(`{{carplate}}`,plate);
+    let dateAfter = new Date(date.getTime()+i*10000);
+    message = dateAfter.toLocaleDateString('en-GB')+" "+dateAfter.toLocaleTimeString('en-GB')+" "+message;
+    console.log(message);
+    //bot.sendMessage(message, "-529232276", null, true).catch(e=> console.error(e));
+  }
 }
 
 const sendSensorStreet = (ambientState) => (street) => {
