@@ -49,15 +49,16 @@ fetch('./messagesPatterns.json').then(response => response.json()).then(data => 
 //6002727154:AAHqofuHXQ9o0MhxS-1bpUezxnUrkM_YesU
 const bot = new Bot("6002727154:AAHqofuHXQ9o0MhxS-1bpUezxnUrkM_YesU")
 
-const getPoliceNotification = (date) => (car) => {
-  
+const getPoliceNotification = (ambient) => (car) => {
+ // console.log(date);
+  //date = date.date;
   let street = car.currentStreet;
   let plate = `AC${('000'+car.id).slice(-3)}KS`;
   for(let i=0; i<Math.random()*4;i++){
     let message = getRandomArray(SNetworkMessages);
     message = message.replaceAll(`{{street}}`,street);
     message = message.replaceAll(`{{carplate}}`,plate);
-    let dateAfter = new Date(date.getTime()+i*10000);
+    let dateAfter = new Date(ambient.hour.getTime()+i*10000);
     message = dateAfter.toLocaleDateString('en-GB')+" "+dateAfter.toLocaleTimeString('en-GB')+" "+message;
     console.log(message);
     //bot.sendMessage(message, "-529232276", null, true).catch(e=> console.error(e));

@@ -17,6 +17,10 @@ img {
     font-size: 10px;
 }
 
+#streetList .full {
+    background-color: coral;
+}
+
 
 #streetList td {
     display: flex;

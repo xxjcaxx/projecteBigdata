@@ -1,6 +1,6 @@
 export {initializeStreets,assignCarsToStreets,removeExitCars,crossCar,getCarsCanCross,reenterCar,generateOriginalCars,regenerateCarList,generateIncident,getCandidateToEnter, getCandidatesToEnter,incidentSubject};
 import { interval, Subject } from "rxjs";
-import { compose, MAP, log, FILTER, getRandomArray, doIfRandom } from "./functionalUtils.js";
+import { compose, MAP, log, FILTER, getRandomArray, doIfRandom,getNormallyDistributedRandomNumber } from "./functionalUtils.js";
 import { nodes, streets, cityEntries, cityExits, staticCars, INTERVAL, routines } from "./data.js";
 
 const arrayStreets = Object.keys(streets);
@@ -123,7 +123,7 @@ const crossCar = (streets,ambientState) => (car) => {
     car.lastStreet = car.currentStreet;
     if (car.route.indexOf(car.currentStreet) < car.route.length -1) {
         car.currentStreet = car.route[car.route.indexOf(car.currentStreet) + 1];
-        car.secondsToCanCross = getSecondsToCanCross(streets[car.currentStreet].long + ambientState.raining)(car);
+        car.secondsToCanCross = getSecondsToCanCross(streets[car.currentStreet].long + ambientState.raining + (25 - ambientState.light/3))(car);
         streets[car.currentStreet].cars.push(car);
     } else {
         car.currentStreet = -1;
@@ -153,8 +153,9 @@ const getCarsCanCross = (streets) => compose(
     FILTER(car =>
         car.secondsToCanCross <= 0 // Is at the end 
         && ( 
+           cityExits.includes(car.currentStreet) || 
            car.routeStepNumber >= car.route.length -1 ||         
-           ( Math.random() > 0.5 
+           ( Math.random() > 0.2 
             && (nexStreetIsEmpty(streets,car) || Math.random() < 0.009)) // Not interblock
         )
         ), // Some first cars are not yet in node
@@ -204,7 +205,7 @@ const getCandidatesToEnter =(OriginalCars) => OriginalCars.filter(car => car.cur
 
 const getCandidateToEnter = (OriginalCars,hour) => compose(
     FILTER(s=>s),
-    (candidatesArray) => ([... new Set([getRandomArray(candidatesArray),getRandomArray(candidatesArray)])]),
+    (candidatesArray) => ([... new Set([getRandomArray(candidatesArray),getRandomArray(candidatesArray),getRandomArray(candidatesArray)])]),
     FILTER(carCanEnter(hour)),
     getCandidatesToEnter
     //FILTER(car => car.currentStreet === -1 && car.lastStreet)
@@ -239,7 +240,7 @@ const generateIncident = (streets) => {
     compose(
       //  log,
         car => {incidentSubject.next(car); return car}, 
-        car => { car.secondsToCanCross = Math.round(Math.random()*200)+100; return car},
+        car => { car.secondsToCanCross += Math.round(Math.pow(getNormallyDistributedRandomNumber(15,2),2))+100; return car},
        // log,
                
         getRandomArray,
