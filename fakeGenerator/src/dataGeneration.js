@@ -238,9 +238,9 @@ const getWorsCars = (cars) => [...cars].sort((a,b) => a.maxSpeed > b.maxSpeed ? 
 
 const generateIncident = (streets) => {
     compose(
-      //  log,
+        log,
         car => {incidentSubject.next(car); return car}, 
-        car => { car.secondsToCanCross += Math.round(Math.pow(getNormallyDistributedRandomNumber(15,2),2))+100; return car},
+        car => { car.secondsToCanCross += Math.round(Math.pow(getNormallyDistributedRandomNumber(15,2),2))+300; return car},
        // log,
                
         getRandomArray,

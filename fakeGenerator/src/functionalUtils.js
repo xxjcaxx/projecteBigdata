@@ -37,6 +37,6 @@ function boxMullerTransform() {
 
 function getNormallyDistributedRandomNumber(mean, stddev) {
     const { z0, _ } = boxMullerTransform();
-    let greatAccident = Math.random()< 0.001 ? 15 : 0;  // 1/1000 of chance of an accident
+    let greatAccident = Math.random()< 0.01 ? 15 : 0;  // 1/1000 of chance of an accident
     return z0 * stddev + mean + greatAccident;
 }
