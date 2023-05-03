@@ -36,7 +36,7 @@ const generatePhoto = async (photoURL) => {
   let photoBlob = await response.blob();
   let dataURL = await getReaderPromise(photoBlob);*/
  
-  return photoURL; //base64_encode(photoURL);
+  return base64_encode(photoURL);
 }
 
 app.post('/sensors/:type', async (req,res) => {

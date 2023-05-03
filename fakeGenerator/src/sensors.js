@@ -1,4 +1,4 @@
-//import { Observable, interval, Subject, mergeMap, tap, concatMap, from } from 'rxjs';
+import { Observable, interval, Subject, of, mergeMap, concatMap, tap, delay,auditTime, from } from 'rxjs';
 
 import {getNextNode} from "./data.js";
 import { compose, doIfRandom, getRandomArray } from "./functionalUtils.js";
@@ -50,7 +50,17 @@ fetch('./messagesTagged.json').then(response => response.json()).then(data => SN
 
 
 //6002727154:AAHqofuHXQ9o0MhxS-1bpUezxnUrkM_YesU
-const bot = new Bot("6002727154:AAHqofuHXQ9o0MhxS-1bpUezxnUrkM_YesU")
+const bot = new Bot("6002727154:AAHqofuHXQ9o0MhxS-1bpUezxnUrkM_YesU");
+
+const PoliceNotificationSubject = new Subject();
+
+PoliceNotificationSubject.pipe(
+			 concatMap(x => of(x)
+      .pipe(
+        delay(500))
+    )
+			).subscribe(message=> bot.sendMessage(message, "-529232276", null, true).catch(e=> console.error(e)))
+
 
 const getPoliceNotification = (ambient) => (car) => {
  // console.log(date);
@@ -73,6 +83,7 @@ const getPoliceNotification = (ambient) => (car) => {
     let dateAfter = new Date(ambient.hour.getTime()+i*10000);
     message = dateAfter.toLocaleDateString('en-GB')+" "+dateAfter.toLocaleTimeString('en-GB')+" "+message;
     console.log(message,sentiment);
+    PoliceNotificationSubject.next(message);
     //bot.sendMessage(message, "-529232276", null, true).catch(e=> console.error(e));
   }
 }
