@@ -44,7 +44,10 @@ const addNoiseToSensorStreet = (street) => {
 
 
 let SNetworkMessages = [];
-fetch('./messagesPatterns.json').then(response => response.json()).then(data => SNetworkMessages=data.messages);
+//fetch('./messagesPatterns.json').then(response => response.json()).then(data => SNetworkMessages=data.messages);
+fetch('./messagesTagged.json').then(response => response.json()).then(data => SNetworkMessages=data);
+
+
 
 //6002727154:AAHqofuHXQ9o0MhxS-1bpUezxnUrkM_YesU
 const bot = new Bot("6002727154:AAHqofuHXQ9o0MhxS-1bpUezxnUrkM_YesU")
@@ -54,13 +57,22 @@ const getPoliceNotification = (ambient) => (car) => {
   //date = date.date;
   let street = car.currentStreet;
   let plate = `AC${('000'+car.id).slice(-3)}KS`;
+  let severity = car.secondsToCanCross;
+  let trafficjam = car.secondsNotCrossing;
+  let sentiment = severity < 400 && trafficjam < 10 ? 'happy' : 
+                      severity < 500 && trafficjam < 60 ? 'neutral' :
+                      severity < 600 && trafficjam < 100 ? 'frustrated' :
+                      severity < 700 && trafficjam < 120 ? 'worried' :
+                      'angry';
+
   for(let i=0; i<Math.random()*4;i++){
-    let message = getRandomArray(SNetworkMessages);
+
+    let message = getRandomArray(SNetworkMessages.filter(m => m.firstSentiment == sentiment)).message;
     message = message.replaceAll(`{{street}}`,street);
     message = message.replaceAll(`{{carplate}}`,plate);
     let dateAfter = new Date(ambient.hour.getTime()+i*10000);
     message = dateAfter.toLocaleDateString('en-GB')+" "+dateAfter.toLocaleTimeString('en-GB')+" "+message;
-    console.log(message);
+    console.log(message,sentiment);
     //bot.sendMessage(message, "-529232276", null, true).catch(e=> console.error(e));
   }
 }

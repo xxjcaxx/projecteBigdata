@@ -40,7 +40,7 @@ messagesTagged.filter(m=> m.sentiment.sad == 0 && m.sentiment.angry == 0 && m.se
    
     //messagesTagged.forEach(m=> m.confidence = 100 - m.sentiment.length*14)
 
-    console.log(messagesTagged)
+    console.log(messagesTagged.sort((a,b)=> a.confidence > b.confidence ? -1 : 1))
 
 
 
