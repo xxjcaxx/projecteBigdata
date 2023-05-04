@@ -1,3 +1,0 @@
-DROP DATABASE IF EXISTS sensors;
-CREATE DATABASE sensors;
-
