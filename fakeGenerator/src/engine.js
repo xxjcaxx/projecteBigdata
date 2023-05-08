@@ -3,7 +3,7 @@ import { compose, MAP, log, FILTER, getRandomArray, doIfRandom } from "./functio
 import { createCarsTable, createStreetsTable } from "./views.js";
 import { generateMQTT, takePhoto, getSensorObject, getSensorStreetObject, getPoliceNotification, enqueueMqtt, addNoiseToSensorStreet, sendSensorStreet, sendSensorCar } from "./sensors.js";
 import "./style.css";
-import { interval, Subject } from "rxjs";
+import { debounceTime, interval, Subject, throttleTime } from "rxjs";
 import {initializeStreets,assignCarsToStreets,removeExitCars,crossCar,getCarsCanCross,reenterCar,generateOriginalCars,regenerateCarList,generateIncident,getCandidateToEnter,getCandidatesToEnter,incidentSubject} from "./dataGeneration.js";
 import suncalc from "suncalc"
 
@@ -58,6 +58,8 @@ let ambientState = {
 }
 
 
+const changesSubject = new Subject();
+
 // Start of app
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -106,10 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
 
-        // We show the result
-        document.querySelector('#streetList table').innerHTML = createStreetsTable(Object.entries(streetsState));
-        document.querySelector('#totalCars').innerHTML = `Hour: ${ambientState.hour.getDay()} ${ambientState.hour.toLocaleString()} Cars: ${1000 - getCandidatesToEnter(OriginalCars).length} <br> L: ${Math.round(ambientState.light)} Cloudy: ${Math.round(ambientState.cloudy)} ${Math.round(ambientState.ambientStateTendency.toCloudy * 100)} Raining: ${Math.round(ambientState.raining)} <br/> Danger: ${ ambientState.dangerFactor } <br/>Time Frame: ${timeDifference}`;
-        document.querySelector('#carList table').innerHTML = createCarsTable(OriginalCars);
+        changesSubject.next({streetsState,ambientState,OriginalCars,timeDifference})
 
         /// Sensors Turn
         // Every node has a camera that takes a photo when pass a car
@@ -128,3 +127,14 @@ incidentSubject.subscribe(compose(
     (car)=> getPoliceNotification(ambientState)(car),
     //log
     ));
+
+changesSubject.pipe(
+    throttleTime(1000)
+).subscribe(changes => {
+        //console.log(changes);
+        const {streetsState,ambientState,OriginalCars,timeDifference} = changes;
+        // We show the result
+        document.querySelector('#streetList table').innerHTML = createStreetsTable(Object.entries(streetsState));
+        document.querySelector('#totalCars').innerHTML = `Hour: ${ambientState.hour.getDay()} ${ambientState.hour.toLocaleString()} Cars: ${1000 - getCandidatesToEnter(OriginalCars).length} <br> L: ${Math.round(ambientState.light)} Cloudy: ${Math.round(ambientState.cloudy)} ${Math.round(ambientState.ambientStateTendency.toCloudy * 100)} Raining: ${Math.round(ambientState.raining)} <br/> Danger: ${ ambientState.dangerFactor } <br/>Time Frame: ${timeDifference}`;
+        document.querySelector('#carList table').innerHTML = createCarsTable(OriginalCars);
+})
