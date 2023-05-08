@@ -57,9 +57,9 @@ const PoliceNotificationSubject = new Subject();
 PoliceNotificationSubject.pipe(
   concatMap(x => of(x)
     .pipe(
-      delay(5000))
+      delay(500))
   )
-).subscribe(message => bot.sendMessage(message, "-529232276", null, true).catch(e => console.error(e)))
+) //.subscribe(message => bot.sendMessage(message, "-529232276", null, true).catch(e => console.error(e)))
 
 
 const getPoliceNotification = (ambient) => (car) => {
