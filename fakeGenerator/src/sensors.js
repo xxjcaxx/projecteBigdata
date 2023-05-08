@@ -57,7 +57,7 @@ const PoliceNotificationSubject = new Subject();
 PoliceNotificationSubject.pipe(
   concatMap(x => of(x)
     .pipe(
-      delay(5000))
+      delay(500))
   )
 ).subscribe(message => bot.sendMessage(message, "-529232276", null, true).catch(e => console.error(e)))
 
@@ -75,7 +75,7 @@ const getPoliceNotification = (ambient) => (car) => {
         severity < 700 && trafficjam < 120 ? 'worried' :
           'angry';
 
-  for (let i = 0; i < 4; i++) { 
+  for (let i = 0; i < Math.floor(Math.random()*4)+1; i++) { 
 
     let message = getRandomArray(SNetworkMessages.filter(m => m.firstSentiment == sentiment)).message;
     message = message.replaceAll(`{{street}}`, street);
