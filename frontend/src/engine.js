@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     interval(intervalMillisecons).subscribe(function mainIntervalCallback(step) {
 
 
-        fetch('http://localhost:3100').then(response => response.json()).then(changes => {
+        fetch('http://10.90.6.2:3100').then(response => response.json()).then(changes => {
 
 
         const {streetsState,ambientState,OriginalCars,timeDifference} = changes;

@@ -26,7 +26,7 @@ function initCLientMQTT(){
   return client;
 }
 
-//let client = initCLientMQTT();
+let client = initCLientMQTT();
 
 function base64_encode(file) {
   return "data:image/gif;base64,"+fs.readFileSync(file, 'base64');
@@ -52,9 +52,9 @@ app.post('/sensors/:type', async (req,res) => {
   }
  
     //console.log(sensorPhoto);
-   // client.publish('sensors/'+req.params['type'], JSON.stringify(sensorPhoto),  ()=>{
+    client.publish('sensors/'+req.params['type'], JSON.stringify(sensorPhoto),  ()=>{
        //console.log("publish");
-   //  });
+     });
     // console.log(sensor);
    res.json(sensor)
  }
