@@ -19,7 +19,7 @@ Topico (-t) Mensaje (-m)
 
 ## Frontend:
 
-En el directori fakegenerator: 
+En el directori frontend: 
 
 npm run start
 
@@ -30,4 +30,10 @@ En el directori backend:
 node sensors.js
 
 Modificar les IP del servidor del backend en el fitxer sensorsWorker.js
+
+En el directori simulator:
+
+node engine.js
+
+
 
