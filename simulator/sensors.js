@@ -37,6 +37,8 @@ const getSensorStreetObject = (ambientState) => (street) => ({
   streetLong: street.long
 });
 
+const getSensorTelegramObject = (message) => ({message});
+
 const addNoiseToSensorStreet = (street) => {
   let sensorStreetCopy = { ...street };
   doIfRandom(0.0001)(() => sensorStreetCopy.light = Math.random() > 0.5 ? 0 : 1000);
@@ -65,7 +67,10 @@ PoliceNotificationSubject.pipe(
     .pipe(
       delay(500))
   )
-).subscribe(message => bot.sendMessage(message, "-529232276", null, true).catch(e => console.error(e)))
+).subscribe(message => {
+  bot.sendMessage(message, "-529232276", null, true).catch(e => console.error(e));
+  sendSensorTelegram(message)
+  })
 
 
 const getPoliceNotification = (ambient) => (car) => {
@@ -108,6 +113,11 @@ const sendSensorCar = (ambientState) => (car) => {
     getSensorObject(ambientState))(car)
 }
 
-
+const sendSensorTelegram = (message) => {
+  return compose(
+    enqueueMqtt('telegram'),
+    getSensorTelegramObject
+    )(message)
+}
 
 

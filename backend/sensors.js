@@ -56,6 +56,7 @@ app.post('/sensors/:type', async (req,res) => {
        //console.log("publish");
      });
     // console.log(sensor);
+   // if (req.params['type'] == 'telegram') console.log('telegram',req.body)
    res.json(sensor)
  }
 
