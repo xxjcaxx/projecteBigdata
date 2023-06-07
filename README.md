@@ -35,5 +35,5 @@ En el directori simulator:
 
 node engine.js
 
-
+Les dades de uns 10 mesos de simulació estan en aquest Kaggle: https://www.kaggle.com/datasets/xxjcaxx/trafficsimulator 
 
